@@ -1,0 +1,46 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}1週間の履歴から料理をレコメンド{% endblock %}
+
+{% block content %}
+<form action="{% url 'recommend_by_dri' %}" method="POST" >
+  {% csrf_token %}
+  <div class="row" style="margin-top:30px;">
+    <div class="range col-lg-6 offset-md-3">
+      {{ form }}
+    </div>
+  </div>
+
+  <button type="submit" class="save btn btn-primary offset-md-3" style="margin-top: 30px;">レコメンド</button>
+</form>
+
+<p><h3>{{ message_label }}</h3></p>
+{% for message in messages %}
+<p>{{ message }}</p>
+{% endfor %}
+
+<p><h3>{{ recomend_dish_label }}</h3></p>
+{% for dish in recommend_dish_list %}
+  <p>{{ dish }}</p>
+{% endfor %}
+
+<a href="{% url 'index' %}">
+  <button type="button">戻る</button>
+</a>
+
+<!--
+<form class="register-form" action="{% url 'recommend_by_dri' %}" method="post" novalidate>
+  {% csrf_token %}
+  {{ message }}
+
+  {% for field in form %}
+    <div class="pl-2">
+      {{ field.label_tag }}
+      {{ field.value }}
+    </div>
+  {% endfor %}
+
+  <input type="submit" value="レコメンド" />
+</form>
+-->
+{% endblock %}

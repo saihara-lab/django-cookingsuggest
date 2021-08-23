@@ -1,0 +1,35 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}料理一覧{% endblock %}
+
+{% block content %}
+<form action="" method="get">
+  <input name="query" value="{{ request.GET.query }}" type="text">
+  <button type="submit">検索する</button>
+</form>
+
+<div class="container" style="margin-top: 20px;">
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th>ID</th>
+        <th>料理名</th>
+        <th>エネルギー</th>
+        <th>詳細</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for recipe in object_list %}
+       <tr>
+         <td>{{recipe.id}}</td>
+         <td>{{recipe.name}}</td>
+         <td>{{recipe.energy}}</td>
+         <td><a href="{% url 'dish_master_detail' recipe.id %}">詳細</a></td>
+       </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{% url 'index' %}">
+    <button type="button">戻る</button>
+</div>
+{% endblock %}

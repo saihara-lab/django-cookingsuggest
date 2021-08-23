@@ -1,0 +1,41 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}料理の詳細{% endblock %}
+
+{% block content %}
+<form action="{% url 'dish_history_delete' id %}" method="post" novalidate>
+  {% csrf_token %}
+
+  {% for field in form %}
+    <div class="pl-2">
+      {{ field.label_tag }}
+      {{ field.value }}
+    </div>
+  {% endfor %}
+  <input type="submit" value="削除" />
+  <a href="{% url 'dish_history' %}">
+    <button type="button">戻る</button>
+</a>
+</form>
+{% endblock %}
+
+<!--
+<p>料理名　：　{{ object.name }}</p>
+<p>作った日　：　{{ object.registered_date }}</p>
+<p>エネルギー　：　{{ object.energy }}</p>
+<p>タンパク質　：　{{ object.protein }}</p>
+<p>脂質　：　{{ object.fat }}</p>
+<p>カルシウム　：　{{ object.calcium }}</p>
+<p>鉄分　：　{{ object.iron }}</p>
+<p>ビタミンA　：　{{ object.vitamin_a }}</p>
+<p>ビタミンB1　：　{{ object.vitamin_b1 }}</p>
+<p>ビタミンB2　：　{{ object.vitamin_b2 }}</p>
+<p>ビタミンC　：　{{ object.vitamin_c }}</p>
+<p>材料</p>
+<p>{{ object.cover_amt }} 人前</p>
+<p>{{ object.ingredient }}</p>
+<p>作り方</p>
+<p>{{ object.process }}</p>
+<p>栄養面で近い料理： {{ object.sim_dish_ntr }}</p>
+<p>材料・調理工程が近い料理： {{ object.sim_dish_ip }}</p>
+-->

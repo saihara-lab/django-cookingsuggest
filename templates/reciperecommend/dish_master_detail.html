@@ -1,0 +1,16 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}料理の詳細{% endblock %}
+
+{% block content %}
+
+  {% for field in form %}
+    <div class="pl-2">
+      {{ field.label_tag }}
+      {{ field.value }}
+    </div>
+  {% endfor %}
+  <a href="{% url 'dish_master_list' %}">
+    <button type="button">戻る</button>
+  </a>
+{% endblock %}

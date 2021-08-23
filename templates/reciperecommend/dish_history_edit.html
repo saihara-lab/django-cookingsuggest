@@ -1,0 +1,33 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}料理の編集{% endblock %}
+
+{% block content %}
+{% for message in massages %}
+ <div class="alert alert-success">{{message}}</div>
+{% endfor %}
+
+<ul>
+  {% for field in form %}
+   {% for error in field.errors %}
+    <li>{{error}}</li>
+   {% endfor %}
+  {% endfor %}
+</ul>
+
+<form action="{% url 'dish_history_update' id %}" method="POST" novalidate>
+  {% csrf_token %}
+
+  {% for field in form %}
+    <div class="pl-2">
+      {{ field.label_tag }}
+      {{ field }}
+      {{ field.erros | yesno:'*,'}}
+    </div>
+  {% endfor %}
+  <input type="submit" value="更新" />
+  <a href="{% url 'dish_history' %}">
+    <button type="button">戻る</button>
+  </a>
+</form>
+{% endblock %}

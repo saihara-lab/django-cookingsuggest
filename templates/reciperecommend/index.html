@@ -1,0 +1,23 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block content %}
+
+<div class="container" style="margin-top: 20px;">
+  <h5 style="text-align: center;">今日の料理をリストに登録するか、過去の料理を確認するか選んでください</h5>
+
+<div class="row" style="margin-top: 20px;">
+  <div class="col s8" style="text-align: center;">
+    <!-- 入力フォーム遷移ボタン -->
+    <a href="/dish_history_input_form"><button class="btn btn-primary" type="button" name="input" >今日の料理をリストに追加する</button></a>
+    <!-- レシピ履歴一覧遷移ボタン -->
+    <a href="/dish_history"><button class="btn btn-primary" type="button" name="history">今までに作った料理を確認する</button></a>
+    <!-- レシピマスタ一覧遷移ボタン -->
+    <a href="/dish_master_list"><button class="btn btn-primary" type="button" name="history">料理を検索する</button></a>
+    <!-- レシピレコメンド画面遷移ボタン -->
+    <a href="/recommend_by_dri"><button class="btn btn-primary" type="button" name="history">おすすめレシピを見る</button></a>
+
+  </div>
+</div>
+</div>
+
+{% endblock %}

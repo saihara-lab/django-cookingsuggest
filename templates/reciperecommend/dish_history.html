@@ -1,0 +1,42 @@
+{% extends 'reciperecommend/base.html' %}
+
+{% block title %}作った料理一覧{% endblock %}
+
+{% block content %}
+
+<div class="container" style="margin-top: 20px;">
+  <table class="table">
+    <thead class="thead-dark">
+      <tr>
+        <th>ID</th>
+        <th>作った日</th>
+        <th>料理名</th>
+        <th>エネルギー</th>
+        <th>詳細</th>
+        <th>編集</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for dish in dishes %}
+       <tr>
+         <td>{{dish.id}}</td>
+         <td>{{dish.registered_date}}</td>
+         <td>{{dish.name}}</td>
+         <td>{{dish.energy}}</td>
+         <td><a href="{% url 'dish_history_detail' dish.id %}">詳細</a></td>
+         <td><a href="{% url 'dish_history_edit' dish.id %}">編集</a></td>
+         <!--
+         <td><form class="delete" method="POST">{% csrf_token %}
+          <button class="btn btn-primary" type="submit" name="d_id" value={{dish.id}}>削除</button>
+          </form>
+         </td>
+         -->
+       </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{% url 'index' %}">
+    <button type="button">戻る</button>
+  </a>
+</div>
+{% endblock %}
