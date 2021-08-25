@@ -15,7 +15,7 @@
   {% endfor %}
 </ul>
 
-<form action="{% url 'dish_history_update' id %}" method="POST" novalidate>
+<form class="range col-lg-6 offset-md-3" action="{% url 'dish_history_update' id %}" method="POST" novalidate>
   {% csrf_token %}
 
   {% for field in form %}
@@ -25,9 +25,8 @@
       {{ field.erros | yesno:'*,'}}
     </div>
   {% endfor %}
-  <input type="submit" value="更新" />
-  <a href="{% url 'dish_history' %}">
-    <button type="button">戻る</button>
-  </a>
+
+  <button type="submit" class="btn btn-warning offset-md-3" style="margin-top: 30px;">更新</button>
+  <a href="{% url 'dish_history' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
 </form>
 {% endblock %}

@@ -3,14 +3,85 @@
 {% block title %}料理の詳細{% endblock %}
 
 {% block content %}
-
-  {% for field in form %}
-    <div class="pl-2">
-      {{ field.label_tag }}
-      {{ field.value }}
+  <div class="range col-lg-6 offset-md-3">
+    <table class="table">
+      <tr>
+        <th>料理名</th>
+        <td>{{ data.name }}</td>
+      </tr>
+      <tr>
+        <th>エネルギー</th>
+        <td>{{ data.energy }}</td>
+      </tr>
+      <tr>
+        <th>タンパク質</th>
+        <td>{{ data.protein }}</td>
+      </tr>
+      <tr>
+        <th>脂質</th>
+        <td>{{ data.fat }}</td>
+      </tr>
+      <tr>
+        <th>カルシウム</th>
+        <td>{{ data.calcium }}</td>
+      </tr>
+      <tr>
+        <th>鉄分</th>
+        <td>{{ data.iron }}</td>
+      </tr>
+      <tr>
+        <th>ビタミンA</th>
+        <td>{{ data.vitamin_a }}</td>
+      </tr>
+      <tr>
+        <th>ビタミンB1</th>
+        <td>{{ data.vitamin_b1 }}</td>
+      </tr>
+      <tr>
+        <th>ビタミンB2</th>
+        <td>{{ data.vitamin_b2 }}</td>
+      </tr>
+      <tr>
+        <th>ビタミンC</th>
+        <td>{{ data.vitamin_c }}</td>
+      </tr>
+      <tr>
+        <th>材料〜人前</th>
+        <td>{{ data.cover_amt }}</td>
+      </tr>
+      <tr>
+        <th>材料</th>
+        <td>{{ data.ingredient }}</td>
+      </tr>
+      <tr>
+        <th>調理工程</th>
+        <td>{{ data.process }}</td>
+      </tr>
+      <tr>
+        <th>似ている料理:栄養</th>
+        <td>
+          {{ data.sim_dish_ntr}}
+          <!--
+          {% for dish in data.sim_dish_ntr %}
+          <p>{{ dish }}</p>
+          {% endfor %}
+          -->
+        </td>
+      </tr>
+      <tr>
+        <th>似ている料理:材料・工程</th>
+        <td>
+          {{ data.sim_dish_ip }}
+          <!--
+          {% for dish in data.sim_dish_ip %}
+          <p>{{ dish }}</p>
+          {% endfor %}
+          -->
+        </td>
+      </tr>
+    </table>
+    <div class="text-end">
+      <a href="{% url 'dish_master_list' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
     </div>
-  {% endfor %}
-  <a href="{% url 'dish_master_list' %}">
-    <button type="button">戻る</button>
-  </a>
-{% endblock %}
+  </div>
+  {% endblock %}

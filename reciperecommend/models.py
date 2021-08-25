@@ -22,8 +22,8 @@ class DishHistory(models.Model):
   nutrition_proba = models.FloatField(default=0.0)
   i_p_result = models.IntegerField(blank=True, null=True)
   i_p_proba = models.FloatField(default=0.0)
-  sim_dish_ntr = models.TextField(blank=True, null=True)
-  sim_dish_ip = models.TextField(blank=True, null=True)
+  sim_dish_ntr = models.TextField('似ている料理:栄養', blank=True, null=True)
+  sim_dish_ip = models.TextField('似ている料理:材料・工程', blank=True, null=True)
   registered_date = models.DateField(default=date.today())
 
   # 管理画面の表示方法を定義

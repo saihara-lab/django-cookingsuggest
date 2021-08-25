@@ -2,7 +2,7 @@
 
 {% block content %}
 <div style="margin-top: 20px;">
-  <h2>レシピ情報を入力してください</h2>
+  <h5 tyle="text-align: center;">レシピ情報を入力してください</h5>
 </div>
 <form method="POST" class="register-form ">{% csrf_token %}
   <div class="row" style="margin-top:30px;">
@@ -12,7 +12,8 @@
   </div>
 
 <!-- 送信（保存）ボタン-->
-  <button type="submit" class="save btn btn-primary offset-md-3" style="margin-top: 30px;">登録</button>
-  </form>
-  <a href="/dish_history"><button class="btn btn-primary" type="button" name="history">戻る</button></a>
-{% endblock %}
+  <button type="submit" class="save btn btn-warning offset-md-3" style="margin-top: 30px;">登録</button>
+  <a href="/dish_history"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">一覧へ</button></a>  
+  <a href="{% url 'index' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
+</form>
+  {% endblock %}

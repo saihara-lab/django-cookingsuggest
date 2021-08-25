@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from .forms import DishHistoryModelForm, DishHistoryInputForm, DishMasterModelForm, RecommendByDriModelForm, LoginForm, SignUpForm
 from django.views.generic import DetailView, ListView
 from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -164,7 +165,8 @@ def dish_history_detail(request, id):
   form = DishHistoryModelForm(instance=obj)
   return render(request, 'reciperecommend/dish_history_detail.html', {
     'id': id,
-    'form': form
+    'form': form,
+    'data': obj
   })
 
 # 料理履歴編集
@@ -203,7 +205,7 @@ def dish_history_delete(request, id):
   return redirect(reverse('dish_history'))
 
 # 料理マスタ一覧
-@login_required
+#@method_decorator(require_POST, name='dispatch')
 class DishMasterList(ListView):
   model = DishMaster
 
@@ -221,10 +223,9 @@ class DishMasterList(ListView):
 @login_required
 def dish_master_detail(request, id):
   obj = DishMaster.objects.get(pk=id)
-  form = DishMasterModelForm(instance=obj)
   return render(request, 'reciperecommend/dish_master_detail.html', {
     'id': id,
-    'form': form
+    'data': obj
   })
 
 # RCIから料理をレコメンド：年齢・性別入力

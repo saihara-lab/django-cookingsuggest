@@ -3,18 +3,18 @@
 {% block content %}
 
 <div class="container" style="margin-top: 20px;">
-  <h5 style="text-align: center;">今日の料理をリストに登録するか、過去の料理を確認するか選んでください</h5>
+  <h5 style="text-align: center;">使用するメニューを選択してください。</h5>
 
 <div class="row" style="margin-top: 20px;">
-  <div class="col s8" style="text-align: center;">
+  <div class="text-center">
     <!-- 入力フォーム遷移ボタン -->
-    <a href="/dish_history_input_form"><button class="btn btn-primary" type="button" name="input" >今日の料理をリストに追加する</button></a>
+    <p><a href="/dish_history_input_form"><button class="btn btn-warning w-25" type="button" name="input" ><i class="bi bi-pencil-square"></i>今日の料理をリストに追加する</button></a></p>
     <!-- レシピ履歴一覧遷移ボタン -->
-    <a href="/dish_history"><button class="btn btn-primary" type="button" name="history">今までに作った料理を確認する</button></a>
+    <p><a href="/dish_history"><button class="btn btn-warning w-25" type="button" name="history"><i class="bi bi-journal-text"></i>今までに作った料理を確認する</button></a></p>
     <!-- レシピマスタ一覧遷移ボタン -->
-    <a href="/dish_master_list"><button class="btn btn-primary" type="button" name="history">料理を検索する</button></a>
+    <p><a href="/dish_master_list"><button class="btn btn-warning w-25" type="button" name="history"><i class="bi bi-search"></i>料理を検索する</button></a></p>
     <!-- レシピレコメンド画面遷移ボタン -->
-    <a href="/recommend_by_dri"><button class="btn btn-primary" type="button" name="history">おすすめレシピを見る</button></a>
+    <p><a href="/recommend_by_dri"><button class="btn btn-warning w-25" type="button" name="history"><i class="bi bi-heart"></i>おすすめレシピを見る</button></a></p>
 
   </div>
 </div>
