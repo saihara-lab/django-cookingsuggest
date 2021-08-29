@@ -3,15 +3,17 @@
 {% block title %}似ている料理{% endblock %}
 
 {% block content %}
-<div class="container" style="margin-top: 20px;">
-  <p>栄養のグループ:{{nutrition_y}}</p>
-  <p>材料・工程のグループ:{{i_p_y}}</p>
-  
-  <p>栄養が近い料理</p>
-  <p>{{dish_sim_ntr}}</p>
-
-  <p>材料・調理工程が近い料理</p>
-  <p>{{dish_sim_ip}}</p>
+<div class="range col-lg-6 offset-md-3" id="result">
+  <table class="table">
+    <tr>
+      <th>栄養が近い料理</th>
+      <td>{{ dish_sim_ntr }}</td>
+    </tr>
+    <tr>
+      <th>材料・調理工程が近い料理</th>
+      <td>{{dish_sim_ip}}</td>
+    </tr>
+  </table>
   
   <a href="/dish_history"><button class="btn btn-primary" type="button" name="history">戻る</button></a>
 </div>

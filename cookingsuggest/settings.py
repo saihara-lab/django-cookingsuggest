@@ -133,4 +133,4 @@ LOGIN_REDIRECT_URL = 'index'
 
 # ログアウト後ログインページにリダイレクト
 LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = 'lp'

@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum
 
 import joblib
@@ -16,13 +16,17 @@ from django_pandas.io import read_frame
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 import MeCab
+from gensim.models.doc2vec import Doc2Vec
+from gensim.models.doc2vec import TaggedDocument
 
 from .models import DishHistory, DishMaster, DietaryReferenceIntake
 
 
-
+# 履歴登録した料理を分類するモデル
 loaded_model_nutrition = joblib.load('model/recipe_classifier_ntr.pkl')
 loaded_model_ip = joblib.load(('model/recipe_classifier_ip.pkl'))
+# 履歴登録した料理の材料・工程から文書ベクトルを取得するモデル
+loaded_model_doc2vec = Doc2Vec.load('model/ip_doc2vec.model')
 
 @login_required
 def index(request):
@@ -43,7 +47,7 @@ def dish_history_input_form(request):
 @login_required
 def dish_classify_result(request):
   ## 最新の料理履歴データを取得
-  # 栄養
+  # ■１．栄養
   data_n = DishHistory.objects.order_by('id').reverse().values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
   # 材料・工程
   data_ip = DishHistory.objects.order_by('id').reverse().values_list('ingredient', 'process')
@@ -56,52 +60,12 @@ def dish_classify_result(request):
   y_n_proba = y_n_proba * 100  # 予測確率を*100
   y_n, y_n_proba = y_n[0], y_n_proba[0]  # それぞれ0番目を取り出す
 
-  # 材料・工程
-  # 前処理と形態素解析
-  data_ip_tgt = data_ip[0]
-  data_ip_mst = list(DishMaster.objects.values_list('ingredient', 'process'))
-  data_ip_mst.append(data_ip_tgt)
-
-  x_ip_preprocessed = []
-  for d in data_ip_mst:
-    x_ip_text = d[0] + d[1]
-    x_ip_text = x_ip_text.replace('\n', '') # 改行コードを削除
-    x_ip_preprocessed.append(x_ip_text)
-  
-  mecab = MeCab.Tagger('-Ochasen')
-  
-  nva_parse_all = []
-  for x in x_ip_preprocessed:
-    res = mecab.parse(x)
-    words = res.split('\n')[:-2]
-
-    nva_list = []
-    for word in words:
-      part = word.split('\t')
-      if ('名詞-一般' in part[3] or '動詞-自立' in part[3] or '形容詞-自立' in part[3]) and part[0] != '゙':
-        nva_list.append(part[2])
-    nva_parse = ' '.join(nva_list)
-    nva_parse_all.append(nva_parse)
-
-  # TF-IDFを取得
-  vectorizer = TfidfVectorizer()
-  tfidf_all = vectorizer.fit_transform(nva_parse_all)
-  tfidf_tgt = tfidf_all[-1]
-
   # 推論結果を保存
   dish = DishHistory.objects.order_by('id').reverse()[0]
   dish.nutrition_proba = y_n_proba[y_n] # 栄養
   dish.nutrition_result = y_n
 
   ## 推論結果のクラスタに該当するデータを抽出
-  #df_target = read_frame(dish, fieldnames=['protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c'])
-  #target_data = df_target.values
-
-  #same_cluster_obj = DishMaster.objects.filter(cluster=y_n).order_by('id').values_list('id', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
-  #df_m_ntr = read_frame(same_cluster_obj, fieldnames=['id', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c'])
-  #same_cluster_data = df_m_ntr.drop('id', axis=1).values
-  #same_cluster_idx = df_m_ntr['id'].values
-
   same_cluster_data = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
   same_cluster_idx = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('id')
   same_cluster_idx = [int(idx[0]) for idx in same_cluster_idx]
@@ -113,7 +77,7 @@ def dish_classify_result(request):
   cos_sims = {}
   for idx, data in zip(same_cluster_idx, same_cluster_data):
     vec = np.array(data)
-    
+
     cs = round(float(cosine_similarity(tgt.reshape(1, -1), vec.reshape(1, -1))),3)
     cos_sims[idx] = cs
 
@@ -124,16 +88,59 @@ def dish_classify_result(request):
   sim_dish_ntr_list = [n[0] for n in sim_dish_ntr_list]
   dish.sim_dish_ntr = ' '.join(sim_dish_ntr_list)
 
-  # 材料・工程のコサイン類似度が高い上位3件の料理のIDを取得
-  other_ip_idx = DishMaster.objects.order_by('id').values_list('id')
-  other_ip_idx = [int(idx[0]) for idx in other_ip_idx]
-  cos_sims_ip = {}
-  for idx, data in zip(other_ip_idx, tfidf_all):
-    cs_ip = round(float(cosine_similarity(tfidf_tgt.reshape(1, -1), data.reshape(1, -1))),3)
-    cos_sims_ip[idx] = cs_ip
+  # ■２．材料・工程
+  # 前処理と形態素解析
+  data_ip_tgt = data_ip[0]
+  data_ip_tgt = data_ip_tgt[0] + data_ip_tgt[0]
+  data_ip_tgt = data_ip_tgt.replace('\n', '') # 改行コードを削除
+  data_ip_mst = list(DishMaster.objects.order_by('id').values_list('id','ingredient', 'process'))
+  data_ip_mst_id = []
+  data_ip_preprocessed = []
+  for d in data_ip_mst:
+    x_ip_text = d[1] + d[2]
+    x_ip_text = x_ip_text.replace('\n', '') # 改行コードを削除
+    data_ip_mst_id.append(d[0])
+    data_ip_preprocessed.append(x_ip_text)
 
-  cos_sims_top3_ip = sorted(cos_sims_ip.items(), key=lambda x:x[1], reverse=True)[:3]
-  top3_idx_ip = [k[0] for k in cos_sims_top3_ip]
+  def keitaiso(text):
+    tagger = MeCab.Tagger("-Ochasen")
+    tagger.parse("")
+    node = tagger.parseToNode(text)
+    word = ""
+    pre_feature = ""
+    while node:
+          # 名詞、形容詞、動詞、形容動詞であるかを判定する。
+      HANTEI = "名詞" in node.feature
+      HANTEI = "形容詞" in node.feature or HANTEI
+      HANTEI = "動詞" in node.feature or HANTEI
+      HANTEI = "形容動詞" in node.feature or HANTEI
+          # 以下に該当する場合は除外する。（ストップワード）
+      HANTEI = (not "代名詞" in node.feature) and HANTEI
+      HANTEI = (not "助動詞" in node.feature) and HANTEI
+      HANTEI = (not "非自立" in node.feature) and HANTEI
+      HANTEI = (not "数" in node.feature) and HANTEI
+      HANTEI = (not "人名" in node.feature) and HANTEI
+      if HANTEI:
+        if ("名詞接続" in pre_feature and "名詞" in node.feature) or ("接尾" in node.feature):
+          word += "{0}".format(node.surface)
+        else:
+          word += " {0}".format(node.surface)
+        #print("{0}{1}".format(node.surface, node.feature))
+      pre_feature = node.feature
+      node = node.next
+    return word[1:]
+  
+  tgt_word_list = keitaiso(data_ip_tgt).split(' ')
+  mst_word_lists = [keitaiso(d).split(' ') for d in data_ip_preprocessed]
+
+  ## 文書ベクトル類似度トップ３取得
+  doc_sim = {}
+  for id, data in zip(data_ip_mst_id, mst_word_lists):
+    sim = loaded_model_doc2vec.docvecs.similarity_unseen_docs(loaded_model_doc2vec, tgt_word_list, data, alpha=1, min_alpha=0.0001, steps=5)
+    doc_sim[id] = sim
+
+  doc_sim_top3_ip = sorted(doc_sim.items(), key=lambda x:x[1], reverse=True)[:3]
+  top3_idx_ip = [k[0] for k in doc_sim_top3_ip]
 
   sim_dish_ip_list = DishMaster.objects.filter(id__in = top3_idx_ip).values_list('name')
   sim_dish_ip_list = [n[0] for n in sim_dish_ip_list]
@@ -244,7 +251,7 @@ def recommend_by_dri(request):
     tgt_vitamin_b1_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b1'))
     tgt_vitamin_b2_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b2'))
     tgt_vitamin_c_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_c'))
-  
+
     tgt_dri_weeksum = [float(tgt_dri[0][i]) * 7 for i in range(7)]
 
     messages = []
@@ -296,7 +303,7 @@ def recommend_by_dri(request):
     # 栄養が目標に届いた場合
     else:
       necessary_ntr.append(tgt_dri[0][2] / 3)
-    
+
     ## ビタミンA
     # 栄養が目標に届かない場合
     if tgt_dri_weeksum[3] - tgt_vitamin_a_sum['vitamin_a__sum'] > 0:
@@ -319,7 +326,7 @@ def recommend_by_dri(request):
       necessary_ntr.append((tgt_dri[0][5] / 3) + ((tgt_dri_weeksum[5] - tgt_vitamin_b2_sum['vitamin_b2__sum']) / 3))
     # 栄養が目標に届いた場合
     else:
-      necessary_ntr.append(tgt_dri[0][5] / 3)    
+      necessary_ntr.append(tgt_dri[0][5] / 3)
 
     ## ビタミンC
     # 栄養が目標に届かない場合
@@ -339,7 +346,7 @@ def recommend_by_dri(request):
     cos_sims = {}
     for idx, data in zip(dish_data_idx, dish_data_all):
       vec = np.array(data)
-      
+
       cs = round(float(cosine_similarity(necessary_ntr.reshape(1, -1), vec.reshape(1, -1))),3)
       cos_sims[idx] = cs
 
@@ -357,7 +364,7 @@ def recommend_by_dri(request):
     })
 
   else:
-    
+
     messages = '年齢と性別を入力して、ボタンを押してください'
     form = RecommendByDriModelForm()
 
@@ -387,11 +394,123 @@ def signup(request):
       # 読み取った情報をログインに使用する情報として new_user に格納
       new_user = authenticate(username=username, password=password)
       if new_user is not None:
-         # new_user の情報からログイン処理を行う
+        # new_user の情報からログイン処理を行う
         login(request, new_user)
         # ログイン後のリダイレクト処理
         return redirect('index')
   # POST で送信がなかった場合の処理
   else:
     form = SignUpForm()
-    return render(request, 'reciperecommend/signup.html', {'form': form})
+    return render(request, 'reciperecommend/signup.html', {'form':form})
+
+def lp(request):
+    return render(request, 'reciperecommend/lp.html')
+
+"""
+## 新規登録時の材料・工程の推論と類似度の取得：TF-IDF
+@login_required
+def dish_classify_result(request):
+  ## 最新の料理履歴データを取得
+  # 栄養
+  data_n = DishHistory.objects.order_by('id').reverse().values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
+  # 材料・工程
+  data_ip = DishHistory.objects.order_by('id').reverse().values_list('ingredient', 'process')
+
+  ## 推論の実行
+  # 栄養
+  x_n = np.array([data_n[0]])
+  y_n = loaded_model_nutrition.predict(x_n)
+  y_n_proba = loaded_model_nutrition.predict_proba(x_n)
+  y_n_proba = y_n_proba * 100  # 予測確率を*100
+  y_n, y_n_proba = y_n[0], y_n_proba[0]  # それぞれ0番目を取り出す
+
+  # 材料・工程
+  # 前処理と形態素解析
+  data_ip_tgt = data_ip[0]
+
+  data_ip_mst = list(DishMaster.objects.values_list('ingredient', 'process'))
+  data_ip_mst.append(data_ip_tgt)
+
+  x_ip_preprocessed = []
+  for d in data_ip_mst:
+    x_ip_text = d[0] + d[1]
+    x_ip_text = x_ip_text.replace('\n', '') # 改行コードを削除
+    x_ip_preprocessed.append(x_ip_text)
+
+  mecab = MeCab.Tagger('-Ochasen')
+
+  nva_parse_all = []
+  for x in x_ip_preprocessed:
+    res = mecab.parse(x)
+    words = res.split('\n')[:-2]
+
+    nva_list = []
+    for word in words:
+      part = word.split('\t')
+      if ('名詞-一般' in part[3] or '動詞-自立' in part[3] or '形容詞-自立' in part[3]) and part[0] != '゙':
+        nva_list.append(part[2])
+    nva_parse = ' '.join(nva_list)
+    nva_parse_all.append(nva_parse)
+
+  # TF-IDFを取得
+  vectorizer = TfidfVectorizer()
+  tfidf_all = vectorizer.fit_transform(nva_parse_all)
+  tfidf_tgt = tfidf_all[-1]
+
+  # 推論結果を保存
+  dish = DishHistory.objects.order_by('id').reverse()[0]
+  dish.nutrition_proba = y_n_proba[y_n] # 栄養
+  dish.nutrition_result = y_n
+
+  ## 推論結果のクラスタに該当するデータを抽出
+  #df_target = read_frame(dish, fieldnames=['protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c'])
+  #target_data = df_target.values
+
+  #same_cluster_obj = DishMaster.objects.filter(cluster=y_n).order_by('id').values_list('id', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
+  #df_m_ntr = read_frame(same_cluster_obj, fieldnames=['id', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c'])
+  #same_cluster_data = df_m_ntr.drop('id', axis=1).values
+  #same_cluster_idx = df_m_ntr['id'].values
+
+  same_cluster_data = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
+  same_cluster_idx = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('id')
+  same_cluster_idx = [int(idx[0]) for idx in same_cluster_idx]
+
+  # 栄養のコサイン類似度が高い上位3件の料理のIDを取得
+  tgt = x_n.flatten()
+  tgt = [float(t) for t in tgt]
+  tgt = np.array(tgt)
+  cos_sims = {}
+  for idx, data in zip(same_cluster_idx, same_cluster_data):
+    vec = np.array(data)
+
+    cs = round(float(cosine_similarity(tgt.reshape(1, -1), vec.reshape(1, -1))),3)
+    cos_sims[idx] = cs
+
+  cos_sims_top3 = sorted(cos_sims.items(), key=lambda x:x[1], reverse=True)[:3]
+  top3_idx = [k[0] for k in cos_sims_top3]
+
+  sim_dish_ntr_list = DishMaster.objects.filter(id__in = top3_idx).values_list('name')
+  sim_dish_ntr_list = [n[0] for n in sim_dish_ntr_list]
+  dish.sim_dish_ntr = ' '.join(sim_dish_ntr_list)
+
+  # 材料・工程のコサイン類似度が高い上位3件の料理のIDを取得
+  other_ip_idx = DishMaster.objects.order_by('id').values_list('id')
+  other_ip_idx = [int(idx[0]) for idx in other_ip_idx]
+  cos_sims_ip = {}
+  for idx, data in zip(other_ip_idx, tfidf_all):
+    cs_ip = round(float(cosine_similarity(tfidf_tgt.reshape(1, -1), data.reshape(1, -1))),3)
+    cos_sims_ip[idx] = cs_ip
+
+  cos_sims_top3_ip = sorted(cos_sims_ip.items(), key=lambda x:x[1], reverse=True)[:3]
+  top3_idx_ip = [k[0] for k in cos_sims_top3_ip]
+
+  sim_dish_ip_list = DishMaster.objects.filter(id__in = top3_idx_ip).values_list('name')
+  sim_dish_ip_list = [n[0] for n in sim_dish_ip_list]
+  dish.sim_dish_ip = ' '.join(sim_dish_ip_list)
+
+  dish.save() # データを保存
+
+  # 推論結果をHTMLに渡す
+  return render(request, 'reciperecommend/dish_classify_result.html', {'nutrition_y':y_n, 'nutrition_y_proba':round(y_n_proba[y_n], 2), 'dish_sim_ntr': dish.sim_dish_ntr, 'dish_sim_ip': dish.sim_dish_ip})
+
+"""

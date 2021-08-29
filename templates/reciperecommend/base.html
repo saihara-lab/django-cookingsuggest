@@ -11,7 +11,7 @@
      <title>{% block title %}レシピ推薦アプリ{% endblock %}</title>
   </head>
 
-  <body>
+  <body class="h-100 vstack">
     <nav class="navbar navbar-light bg-success bg-gradient">
       <span class="navbar-brand mb-0 h1">レシピ推薦アプリ</span>
       <!-- ログアウト機能の追加 -->
@@ -30,6 +30,12 @@
 
      {% endblock %}
     </div>
+
+    <footer class="mt-auto py-2 bg-success bg-gradient text-white">
+      <div class="container text-center">
+        ©2021 相原了
+      </div>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
   </body>
 </html>

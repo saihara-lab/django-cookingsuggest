@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja" class="h-100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" integrity="sha256-PDJQdTN7dolQWDASIoBVrjkuOEaI137FI15sqI3Oxu8=" crossorigin="anonymous">
+
+  <title>レシピ推薦アプリ</title>
+</head>
+<body class="h-100 vstack"
+  data-bs-spy="scroll" data-bs-target="#navbar">
+  <!-- 最後に、bodyへスクロールスパイを追加 -->
+
+  <!-- ナビゲーションバー -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success bg-gradient fixed-top" id="navbar">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-egg"></i>
+        レシピ推薦アプリ
+      </a>
+    </div>
+  </nav>
+
+  <!-- コンテンツ -->
+  <!-- ホーム -->
+  <section class="bg-light bg-gradient" id="home" style="padding: 80px 0 50px">
+    <div class="container py-3">
+      <div class="row align-items-center g-4">
+
+        <!-- 左側 -->
+        <div class="col-md-7">
+          <h1>食べた料理を記録して、食生活をコントロールしよう</h1>
+          <a href="{% url 'signup' %}" class="btn btn-secondary px-5 shadow">
+            新規登録
+          </a>
+          <a href="{% url 'login' %}" class="btn btn-secondary px-5 shadow">
+            ログイン
+          </a>
+        </div>
+
+        <!-- 右側 -->
+        <div class="col-md-5 text-center">
+          <!--
+            画像は、以下からダウンロードください
+            https://undraw.co/illustrations
+          -->
+          {% load static %}
+          <img src="{% static 'img/undraw_cooking_lyxy.svg' %}" class="img-fluid"
+            alt="Content team">
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- コース -->
+  <section class="py-5" id="course">
+    <div class="container text-center py-3">
+      <div class="row pb-3">
+        <div class="col">
+          <h1>こんなことができます</h1>
+        </div>
+      </div>
+      <div class="row g-4">
+
+        <!-- 料理の登録と類似レシピのレコメンド -->
+        <div class="col-md-4">
+          <!-- カード風 -->
+          <div class="border p-3 shadow">
+            <i class="bi bi-pencil-square text-success fs-1"></i>
+            <h5>今日食べた料理を登録</h5>
+            <p class="text-muted">
+              その日に食べた料理を履歴に登録します。その際、登録した料理に似ているレシピをレコメンドします。
+            </p>
+            <h6>■使用しているアルゴリズム</h6>
+            <p class="text-muted">ランダムフォレスト、Doc2vec、コサイン類似度</p>
+          </div>
+        </div>
+
+        <!-- レシピの検索 -->
+        <div class="col-md-4">
+          <div class="border p-3 shadow">
+            <i class="bi bi-search text-success fs-1"></i>
+            <h5>レシピの検索</h5>
+            <p class="text-muted">
+              作りたい料理の材料でレシピを検索し、似ているレシピをレコメンドします。
+            </p>
+            <h6>■使用しているアルゴリズム</h6>
+            <p class="text-muted">Doc2vec、コサイン類似度</p>
+          </div>
+        </div>
+
+        <!-- 履歴からレシピをレコメンド -->
+        <div class="col-md-4">
+          <div class="border p-3 shadow">
+            <i class="bi bi-heart text-success fs-1"></i>
+            <h5>おすすめレシピを見る</h5>
+            <p class="text-muted">
+              過去1週間に登録した料理の特徴から、おすすめレシピを表示します。
+            </p>
+            <h6>■使用しているアルゴリズム</h6>
+            <p class="text-muted">コサイン類似度</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- フッター -->
+  <footer class="mt-auto py-2 bg-success bg-gradient text-white">
+    <div class="container text-center">
+      ©2021 相原了
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+  <script>$('[data-toggle="tooltip"]').tooltip()</script>
+</body>
+</html>
