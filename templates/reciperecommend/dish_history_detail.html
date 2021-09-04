@@ -14,6 +14,10 @@
       <td>{{ data.energy }}</td>
     </tr>
     <tr>
+      <th>炭水化物</th>
+      <td>{{ data.carbohydrate }}</td>
+    </tr>
+    <tr>
       <th>タンパク質</th>
       <td>{{ data.protein }}</td>
     </tr>
@@ -46,10 +50,6 @@
       <td>{{ data.vitamin_c }}</td>
     </tr>
     <tr>
-      <th>材料〜人前</th>
-      <td>{{ data.cover_amt }}</td>
-    </tr>
-    <tr>
       <th>材料</th>
       <td>{{ data.ingredient }}</td>
     </tr>
@@ -69,6 +69,10 @@
       </td>
     </tr>
     <tr>
+      <th>栄養の不足を補うのにいい組み合わせ</th>
+      <td>{{ data.recommend_dish }}</td>
+    </tr>
+    <tr>
       <th>似ている料理:材料・工程</th>
       <td>
         {{ data.sim_dish_ip }}
@@ -85,47 +89,7 @@
     </tr>
   </table>
   <div class="text-end">
-    <a href="{% url 'dish_history' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
+    <a href="{% url 'dish_history' %}"><button class="btn btn-outline-info" style="margin-top: 30px; margin-bottom: 30px;" type="button" name="history">戻る</button></a>
   </div>
 </div>
-
-<!--
-
-<form class="range col-lg-6 offset-md-3" action="{% url 'dish_history_delete' id %}" method="post" novalidate>
-  {% csrf_token %}
-
-  {% for field in form %}
-    <div class="pl-2">
-      {{ field.label_tag }}
-      {{ field.value }}
-    </div>
-  {% endfor %}
-  <button type="submit" class="btn btn-warning offset-md-3" style="margin-top: 30px;">削除</button>
-  <a href="{% url 'dish_history' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
-</form>
 {% endblock %}
-
-  <input type="submit" value="削除" />
-  <a href="{% url 'dish_history' %}">
-    <button type="button">戻る</button>
-  </a>
-
-<p>料理名　：　{{ object.name }}</p>
-<p>作った日　：　{{ object.registered_date }}</p>
-<p>エネルギー　：　{{ object.energy }}</p>
-<p>タンパク質　：　{{ object.protein }}</p>
-<p>脂質　：　{{ object.fat }}</p>
-<p>カルシウム　：　{{ object.calcium }}</p>
-<p>鉄分　：　{{ object.iron }}</p>
-<p>ビタミンA　：　{{ object.vitamin_a }}</p>
-<p>ビタミンB1　：　{{ object.vitamin_b1 }}</p>
-<p>ビタミンB2　：　{{ object.vitamin_b2 }}</p>
-<p>ビタミンC　：　{{ object.vitamin_c }}</p>
-<p>材料</p>
-<p>{{ object.cover_amt }} 人前</p>
-<p>{{ object.ingredient }}</p>
-<p>作り方</p>
-<p>{{ object.process }}</p>
-<p>栄養面で近い料理： {{ object.sim_dish_ntr }}</p>
-<p>材料・調理工程が近い料理： {{ object.sim_dish_ip }}</p>
--->

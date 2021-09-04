@@ -3,7 +3,7 @@
 {% block title %}料理の詳細{% endblock %}
 
 {% block content %}
-  <div class="range col-lg-6 offset-md-3">
+  <div class="range col-lg-6 offset-md-3" style="margin-top: 30px;">
     <table class="table">
       <tr>
         <th>料理名</th>
@@ -12,6 +12,10 @@
       <tr>
         <th>エネルギー</th>
         <td>{{ data.energy }}</td>
+      </tr>
+      <tr>
+        <th>炭水化物</th>
+        <td>{{ data.carbohydrate }}</td>
       </tr>
       <tr>
         <th>タンパク質</th>
@@ -69,6 +73,10 @@
         </td>
       </tr>
       <tr>
+        <th>栄養の不足を補うのにいい組み合わせ</th>
+        <td>{{ data.recommend_dish }}</td>
+      </tr>
+      <tr>
         <th>似ている料理:材料・工程</th>
         <td>
           {{ data.sim_dish_ip }}
@@ -80,8 +88,8 @@
         </td>
       </tr>
     </table>
-    <div class="text-end">
-      <a href="{% url 'dish_master_list' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
+    <div class="text-end" style="margin-bottom: 30px;">
+      <a href="{% url 'dish_master_list' %}"><button class="btn btn-outline-info" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
     </div>
   </div>
   {% endblock %}

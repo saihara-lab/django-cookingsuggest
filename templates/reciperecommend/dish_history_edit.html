@@ -26,7 +26,9 @@
     </div>
   {% endfor %}
 
-  <button type="submit" class="btn btn-warning offset-md-3" style="margin-top: 30px;">更新</button>
-  <a href="{% url 'dish_history' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
+  <div class="text-end">
+  <button type="submit" class="btn btn-info offset-md-3" style="margin-top: 30px; margin-bottom: 30px;">更新</button>
+  <a href="{% url 'dish_history' %}"><button class="btn btn-outline-info" style="margin-top: 30px; margin-bottom: 30px;" type="button" name="history">戻る</button></a>
+  </div>
 </form>
 {% endblock %}

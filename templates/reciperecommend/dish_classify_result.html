@@ -3,11 +3,15 @@
 {% block title %}似ている料理{% endblock %}
 
 {% block content %}
-<div class="range col-lg-6 offset-md-3" id="result">
+<div class="range col-lg-6 offset-md-3" style="margin-top: 20px;" id="result">
   <table class="table">
     <tr>
       <th>栄養が近い料理</th>
       <td>{{ dish_sim_ntr }}</td>
+    </tr>
+    <tr>
+      <th>栄養の不足を補うのにいい組み合わせ</th>
+      <td>{{ recommend_dish }}</td>
     </tr>
     <tr>
       <th>材料・調理工程が近い料理</th>
@@ -15,8 +19,9 @@
     </tr>
   </table>
   
-  <a href="/dish_history"><button class="btn btn-primary" type="button" name="history">戻る</button></a>
+  <div class="text-end">
+    <a href="/dish_history"><button class="btn btn-outline-info" type="button" style="margin-bottom: 30px;" name="history">戻る</button></a>
+  </div>
 </div>
-
 
 {% endblock %}

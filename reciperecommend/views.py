@@ -11,7 +11,10 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum
 
 import joblib
+import datetime
 import numpy as np
+import itertools
+import re
 from django_pandas.io import read_frame
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -48,7 +51,7 @@ def dish_history_input_form(request):
 def dish_classify_result(request):
   ## 最新の料理履歴データを取得
   # ■１．栄養
-  data_n = DishHistory.objects.order_by('id').reverse().values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
+  data_n = DishHistory.objects.order_by('id').reverse().values_list('energy', 'carbohydrate', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
   # 材料・工程
   data_ip = DishHistory.objects.order_by('id').reverse().values_list('ingredient', 'process')
 
@@ -66,7 +69,7 @@ def dish_classify_result(request):
   dish.nutrition_result = y_n
 
   ## 推論結果のクラスタに該当するデータを抽出
-  same_cluster_data = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
+  same_cluster_data = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('energy', 'carbohydrate', 'protein', 'fat', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
   same_cluster_idx = DishMaster.objects.filter(cluster_ntr=y_n).order_by('id').values_list('id')
   same_cluster_idx = [int(idx[0]) for idx in same_cluster_idx]
 
@@ -88,7 +91,13 @@ def dish_classify_result(request):
   sim_dish_ntr_list = [n[0] for n in sim_dish_ntr_list]
   dish.sim_dish_ntr = ' '.join(sim_dish_ntr_list)
 
-  # ■２．材料・工程
+  # ■2. 不足の栄養を補完するのによいレシピのレコメンド
+  recommend_dish_ntr_list = DishMaster.objects.filter(id__in = top3_idx).values_list('recommend_dish')
+  recommend_dish_ntr_list = [r[0] for r in recommend_dish_ntr_list]
+  p_recommend_dish_ntr_list = []
+  dish.recommend_dish = ' '.join(p_recommend_dish_ntr_list)
+
+  # ■3．材料・工程
   # 前処理と形態素解析
   data_ip_tgt = data_ip[0]
   data_ip_tgt = data_ip_tgt[0] + data_ip_tgt[0]
@@ -149,7 +158,7 @@ def dish_classify_result(request):
   dish.save() # データを保存
 
   # 推論結果をHTMLに渡す
-  return render(request, 'reciperecommend/dish_classify_result.html', {'nutrition_y':y_n, 'nutrition_y_proba':round(y_n_proba[y_n], 2), 'dish_sim_ntr': dish.sim_dish_ntr, 'dish_sim_ip': dish.sim_dish_ip})
+  return render(request, 'reciperecommend/dish_classify_result.html', {'nutrition_y':y_n, 'nutrition_y_proba':round(y_n_proba[y_n], 2), 'dish_sim_ntr': dish.sim_dish_ntr, 'dish_sim_ip': dish.sim_dish_ip, 'recommend_dish': dish.recommend_dish})
 
 # 料理履歴
 @login_required
@@ -244,13 +253,23 @@ def recommend_by_dri(request):
 
     tgt_dri = DietaryReferenceIntake.objects.filter(age_range=age_range, gender=gender).order_by('id').reverse().values_list('protein', 'calcium', 'iron', 'vitamin_a', 'vitamin_b1', 'vitamin_b2', 'vitamin_c')
 
-    tgt_protein_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('protein'))
-    tgt_calcium_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('calcium'))
-    tgt_iron_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('iron'))
-    tgt_vitamin_a_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_a'))
-    tgt_vitamin_b1_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b1'))
-    tgt_vitamin_b2_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b2'))
-    tgt_vitamin_c_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_c'))
+    enddate = datetime.date.today()
+    startdate = enddate + datetime.timedelta(days=-6)
+    tgt_protein_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('protein'))
+    tgt_calcium_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('calcium'))
+    tgt_iron_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('iron'))
+    tgt_vitamin_a_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('vitamin_a'))
+    tgt_vitamin_b1_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('vitamin_b1'))
+    tgt_vitamin_b2_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('vitamin_b2'))
+    tgt_vitamin_c_sum = DishHistory.objects.filter(registered_date__range=(startdate, enddate)).aggregate(Sum('vitamin_c'))
+
+    #tgt_protein_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('protein'))
+    #tgt_calcium_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('calcium'))
+    #tgt_iron_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('iron'))
+    #tgt_vitamin_a_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_a'))
+    #tgt_vitamin_b1_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b1'))
+    #tgt_vitamin_b2_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_b2'))
+    #tgt_vitamin_c_sum = DishHistory.objects.order_by('id').reverse()[:21].aggregate(Sum('vitamin_c'))
 
     tgt_dri_weeksum = [float(tgt_dri[0][i]) * 7 for i in range(7)]
 

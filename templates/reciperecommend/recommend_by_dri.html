@@ -3,17 +3,57 @@
 {% block title %}1週間の履歴から料理をレコメンド{% endblock %}
 
 {% block content %}
+<div style="margin-top: 20px;">
+  <h5 style="text-align: center;">
+  <p>過去1週間分の食事の栄養から、おすすめの料理を表示します</p>
+  <p>年齢区分と性別を選択して、レコメンドをクリックしてください</p>
+  </h5>
+</div>
+
 <form action="{% url 'recommend_by_dri' %}" method="POST" >
   {% csrf_token %}
   <div class="row" style="margin-top:30px;">
     <div class="range col-lg-6 offset-md-3">
       {{ form }}
+      <div class="text-end" style="margin-top: 20px; margin-bottom: 20px;">
+        <button type="submit" class="save btn btn-info offset-md-3" style="margin-top: 30px;">レコメンド</button>
+      </div>
     </div>
   </div>
 
-  <button type="submit" class="save btn btn-primary offset-md-3" style="margin-top: 30px;">レコメンド</button>
 </form>
 
+<div class="range col-lg-6 offset-md-3" style="margin-top: 30px;">
+  <div style="margin-top: 20px;">
+    <h5 style="text-align: center;">おすすめの料理</h5>
+  </div>
+  <table class="table">
+    <tr>
+      <th>{{ message_label }}</th>
+      <td>
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+      </td>
+    </tr>
+    <tr>
+      <th>{{ recomend_dish_label }}</th>
+      <td>
+        {% for dish in recommend_dish_list %}
+          <p>{{ dish }}</p>
+        {% endfor %}
+      </td>
+    </tr>
+  </table>
+
+  <div class="text-end" style="margin-bottom: 30px;">
+    <a href="{% url 'index' %}">
+      <button class="btn btn-outline-info" style="margin-top: 30px;" type="button">戻る</button>
+    </a>
+  </div>
+</div>
+
+<!--
 <p><h3>{{ message_label }}</h3></p>
 {% for message in messages %}
 <p>{{ message }}</p>
@@ -24,9 +64,8 @@
   <p>{{ dish }}</p>
 {% endfor %}
 
-<a href="{% url 'index' %}">
-  <button type="button">戻る</button>
-</a>
+
+-->
 
 <!--
 <form class="register-form" action="{% url 'recommend_by_dri' %}" method="post" novalidate>

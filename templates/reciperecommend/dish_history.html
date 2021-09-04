@@ -8,7 +8,6 @@
   <table class="table">
     <thead class="thead-dark">
       <tr>
-        <th>ID</th>
         <th>作った日</th>
         <th>料理名</th>
         <th>エネルギー</th>
@@ -19,7 +18,6 @@
     <tbody>
       {% for dish in dishes %}
        <tr>
-         <td>{{dish.id}}</td>
          <td>{{dish.registered_date}}</td>
          <td>{{dish.name}}</td>
          <td>{{dish.energy}}</td>
@@ -36,7 +34,7 @@
     </tbody>
   </table>
   <div class="text-end">
-    <a href="{% url 'index' %}"><button class="btn btn-outline-warning" style="margin-top: 30px;" type="button" name="history">戻る</button></a>
+    <a href="{% url 'index' %}"><button class="btn btn-outline-info" style="margin-top: 30px; margin-bottom: 30px;" type="button" name="history">メインメニューに戻る</button></a>
   </div>
 </div>
 {% endblock %}

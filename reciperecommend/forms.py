@@ -11,7 +11,7 @@ class DishHistoryInputForm(forms.ModelForm):
     # DBの内容のメタ情報を記載しています
     class Meta:
         model = DishHistory
-        exclude = ['id', 'nutrition_result', 'nutrition_proba', 'i_p_result', 'i_p_proba', 'sim_dish_ntr', 'sim_dish_ip', 'registered_date']
+        exclude = ['id', 'nutrition_result', 'nutrition_proba', 'i_p_result', 'i_p_proba', 'sim_dish_ntr', 'sim_dish_ip', 'recommend_dish','registered_date']
 
 class DishHistoryModelForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
